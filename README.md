@@ -41,8 +41,6 @@ For a tutorial that leverages the datasets used as the application cases in our 
 To use the scRNAbox pipeline, the folowing must be installed on your High-Performance Computing (HPC) system:
 
 - [scrnabox.slurm](#scrnaboxslurm-installation)
-- [CellRanger](#cellranger-installation)
-- [R and R packages](#r-library-preparation-and-r-package-installation)
 
  - - - -
 
@@ -50,26 +48,34 @@ To use the scRNAbox pipeline, the folowing must be installed on your High-Perfor
 
 `scrnabox.slurm` is written in bash and can be used with any Slurm system. To download the latest version of `scrnabox.slurm` (v0.1.52.50) run the following command: 
 ```
-wget https://github.com/neurobioinfo/scrnabox/releases/download/v0.1.52.50/scrnabox.slurm.zip
+## Download the scRNAbox container
+curl "https://zenodo.org/records/12751010/files/scrnabox.slurm.zip?download=1" --output scrnabox.slurm.zip
+
+## Unzip the scRNAbox container
 unzip scrnabox.slurm.zip
 ```
 
 For a description of the options for running `scrnabox.slurm` run the following command:
 ```
-bash /pathway/to/scrnabox.slurm/launch_scrnabox.sh -h 
+export SCRNABOX_HOME=/path/to/scrnabox.slurm
+bash $SCRNABOX_HOME/launch_scrnabox.sh -h 
 ```
 
-If the `scrnabox.slurm` has been installed properly, the above command should return the folllowing:
+If `scrnabox.slurm` has been installed properly, the above command should return the folllowing:
 ```
-scrnabox pipeline version 0.1.52.50
+scrnabox pipeline version 0.1.53.01
+
 ------------------- 
-mandatory arguments:
+Usage:  launch_scrnabox.sh [arguments]
+        mandatory arguments:
                 -d  (--dir)  = Working directory (where all the outputs will be printed) (give full path)
                 --steps  =  Specify what steps, e.g., 2 to run step 2. 2-6, run steps 2 through 6
 
         optional arguments:
                 -h  (--help)  = See helps regarding the pipeline arguments. 
                 --method  = Select your preferred method: HTO and SCRNA for hashtag, and Standard scRNA, respectively. 
+                --jobmode  = The default for the pipeline is Slurm. If you want to run the pipeline locally, use local as the argument. 
+                --container  = The option to instruct the pipeline to utilize the container: --container TRUE. 
                 --msd  = You can get the hashtag labels by running the following code (HTO Step 4). 
                 --markergsea  = Identify marker genes for each cluster and run marker gene set enrichment analysis (GSEA) using EnrichR libraries (Step 7). 
                 --knownmarkers  = Profile the individual or aggregated expression of known marker genes. 
@@ -79,37 +85,10 @@ mandatory arguments:
                 --rundge  = Perform differential gene expression contrasts (Step 8). 
                 --seulist  = You can directly call the list of Seurat objects to the pipeline. 
                 --rcheck  = You can identify which libraries are not installed.  
- 
+
  ------------------- 
  For a comprehensive help, visit  https://neurobioinfo.github.io/scrnabox/site/ for documentation. 
 ```
- - - - -
-
-### CellRanger installation
-
-For information regarding the installation of `CellRanger`, please visit the 10X Genomics [documentation](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/installation). If CellRanger is already installed on your HPC system, you may skip the CellRanger installation procedures.
-
- - - - -
-
-### R library preparation and R package installation
-Users must first install `R` (v4.2 or later) onto their HPC system: 
-
-```
-# install R
-module load r/4.2.1
-```
-Then, users must run the following installation code, which will create a directory where the R packages will be loaded and will install the required R packages:
-
-```
-# Folder for R packages 
-R_PATH=~/path/to/R/library
-mkdir -p $R_PATH
-
-# Install package
-Rscript ./scrnabox.slurm/soft/R/install_packages.R $R_PATH
-```
-
-Alternatively, users can install the packages manually. The R packages required for sRNAbox are shown [here](https://github.com/neurobioinfo/scrnabox/blob/main/scrnabox.slurm/soft/R/R.library.ini).
  - - - -
 
 ## Pipeline steps
@@ -172,13 +151,23 @@ export SCRNABOX_HOME=/pathway/to/scrnabox.slurm
 export SCRNABOX_PWD=/pathway/to/working_directory
 ```
 
+To begin the scRNAbox pipeline, users must run Step 0. Step 0 initiates the pipeline and sets up the working directory by depositing the required files. In Step 0, users must determine whether they want to use the scRNAbox container (--container TRUE), whether to use the SLURM workload manager (--jobmode Slurm) or a stand alone system (--jobmode local), and whether to use the standard analysis track (--method SCRNA) or HTO analysis track (--method HTO).
+
+In the example below, we are electing to use the scRNAbox container (--container TRUE), the Slurm workload manager (--jobmode Slurm), and the standard analysis track (--method SCRNA):
+
+```
+cd /pathway/to/working_directory 
+
+bash $SCRNABOX_HOME/launch_scrnabox.sh -d ${SCRNABOX_PWD} --steps 0 --container TRUE --jobmode Slurm --method SCRNA 
+
+```
+
 Users can then run each step of the scRNAbox pipeline by adjusting the "--steps" flag in the following command:
 ```
 cd /pathway/to/working_directory 
 
-bash $SCRNABOX_HOME/launch_scrnabox.sh \
--d ${SCRNABOX_PWD} \
---steps 1 
+bash $SCRNABOX_HOME/launch_scrnabox.sh -d ${SCRNABOX_PWD} --steps 1
+
 ```
 
 For a comprehensive decription of how to run each step please visit scRNAbox's [documentation](https://neurobioinfo.github.io/scrnabox/site/).
