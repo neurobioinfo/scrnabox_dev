@@ -30,5 +30,5 @@ nav:
         - 'License': 'LICENSE.md'
         - 'Help and Feedback': contributing.md
         - 'Acknowledgement': Acknowledgement.md
+        - 'FAQ': FAQ.md
 theme: readthedocs
-
